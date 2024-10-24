@@ -15,7 +15,7 @@ export const signUpAction = async (formData: FormData) => {
     return { error: "Email and password are required" };
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -23,14 +23,23 @@ export const signUpAction = async (formData: FormData) => {
     },
   });
 
+  if (data && data.user && data.user.identities && data.user.identities.length === 0) {
+    // The email is already registered
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "An account with this email already exists. Please use a different email."
+    );
+  }
+
   if (error) {
-    console.error(error.code + " " + error.message);
+    console.error("Sign-up error:", error.code, error.message);
     return encodedRedirect("error", "/sign-up", error.message);
   } else {
     return encodedRedirect(
       "success",
       "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
+      "Thanks for signing up! Please check your email for a verification link."
     );
   }
 };
@@ -49,7 +58,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  return redirect("/");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
