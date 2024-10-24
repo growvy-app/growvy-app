@@ -7,13 +7,17 @@ export type Message =
   | { error: string }
   | { message: string };
 
-export function FormMessage({ message }: { message: Promise<Message> }) {
+export function FormMessage({ message }: { message: Promise<Message> | Message }) {
   const [unwrappedMessage, setUnwrappedMessage] = useState<Message | null>(
     null
   );
 
   useEffect(() => {
-    message.then(setUnwrappedMessage);
+    if (message instanceof Promise) {
+      message.then(setUnwrappedMessage);
+    } else {
+      setUnwrappedMessage(message);
+    }
   }, [message]);
 
   if (!unwrappedMessage) return null;

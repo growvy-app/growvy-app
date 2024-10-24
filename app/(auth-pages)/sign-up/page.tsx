@@ -15,12 +15,31 @@ export default function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const searchParams = useSearchParams();
-  const errorMessage = searchParams.get("error");
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error) {
+      setErrorMessage(error);
+    }
+  }, [searchParams]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+
+    const response = await signUpAction(formData);
+    if (response.error) {
+      setErrorMessage(response.error);
+    }
+  };
 
   return (
     <>
-      <form className="flex flex-col min-w-64 max-w-64 mx-auto">
+      <form className="flex flex-col min-w-64 max-w-64 mx-auto" onSubmit={handleSubmit}>
         <h1 className="text-2xl font-medium">Sign up</h1>
         <p className="text-sm text text-foreground">
           Already have an account?{" "}
@@ -60,7 +79,7 @@ export default function Signup() {
               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
-          <SubmitButton formAction={signUpAction} pendingText="Signing up...">
+          <SubmitButton pendingText="Signing up...">
             Sign up
           </SubmitButton>
           {errorMessage && (
